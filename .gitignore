@@ -1,1 +1,4 @@
 Makefile
+*.save
+/vendor/
+composer.phar

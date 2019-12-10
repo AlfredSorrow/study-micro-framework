@@ -16,39 +16,51 @@ class Application
         $this->append('POST', $route, $handler);
     }
 
-    private function append($method, $route, $handler)
+    protected function append($method, $route, $handler)
     {
-        $this->handlers[$method][$route] = $handler;
+        $updatedRoute = $route;
+        if (preg_match_all('/:([^\/]+)/', $route, $matches)) {
+            $updatedRoute = array_reduce($matches[1], function ($acc, $value) {
+                $group = "(?P<$value>[\w-]+)";
+                return str_replace(":{$value}", $group, $acc);
+            }, $route);
+        }
+
+        $this->handlers[$method][$updatedRoute] = $handler;
     }
 
     public function run()
     {
         $uri = $this->prepareUri($_SERVER['REQUEST_URI']);
         $method = $_SERVER['REQUEST_METHOD'];
-        if ($this->hasHandler($method, $uri)) {
-            echo $this->handlers[$method][$uri]();
+        [$handler, $attributes] = $this->getRouteData($method, $uri);
+        if (!empty($handler)) {
+            echo $handler($attributes);
             return;
         }
 
         echo 'Page not found';
         return;
     }
-
-    protected function hasHandler($method, $uri): bool
+    
+    protected function getRouteData($method, $uri)
     {
-        return isset($this->handlers[$method][$uri]);
+        foreach ($this->handlers[$method] as $route => $handler) {
+            $preparedRoute = str_replace('/', '\/', $route);
+            $matches = [];
+            if (preg_match("/^$preparedRoute$/i", $uri, $matches)) {
+                $attributes = array_filter($matches, function ($key) {
+                    return !is_numeric($key);
+                }, ARRAY_FILTER_USE_KEY);
+                return [$handler, $attributes];
+            }
+        }
+
+        return [];
     }
 
     protected function prepareUri(string $uri): string
     {
-        $parsedUri = strtolower(parse_url($uri, PHP_URL_PATH));
-        $length = strlen($parsedUri);
-        $lastSymbolPosition = $length - 1;
-        
-        if ($parsedUri[$lastSymbolPosition] === '/' && $length > 1) {
-            return substr_replace($parsedUri, '', $lastSymbolPosition, 1);
-        }
-
-        return $parsedUri;
+        return strtolower(parse_url($uri, PHP_URL_PATH));
     }
 }
