@@ -6,13 +6,12 @@ use function App\Renderer\render;
 
 $app = new Application();
 
-
 $app->get('/', function () {
     return 'Main pagdew';
 });
 
-$app->get('/about/:name/hello/:asd', function ($attributes) {
-    return '';
+$app->get('/about/:name/hello/:hello', function ($attributes) {
+    return render('about', $attributes);
 });
 
 $app->get('/private', function () {
