@@ -2,6 +2,8 @@
 
 namespace App;
 
+use function App\Renderer\render;
+
 class Application
 {
     private $handlers = [];
@@ -34,12 +36,23 @@ class Application
         $uri = $this->prepareUri($_SERVER['REQUEST_URI']);
         $method = $_SERVER['REQUEST_METHOD'];
         [$handler, $attributes] = $this->getRouteData($method, $uri);
+        $meta = [
+            'method' => $method,
+            'uri' => $uri,
+            'headers' => getallheaders()
+        ];
         if (!empty($handler)) {
-            echo $handler($attributes);
+            $response = $handler($meta, array_merge($_GET, $_POST), $attributes);
+            http_response_code($response->getStatusCode());
+            foreach ($response->getHeaderLines() as $header) {
+                header($header);
+            }
+            echo $response->getBody();
             return;
         }
-
-        echo 'Page not found';
+        
+        $response = response(render('404'))->withStatus(404);
+        echo $response->getBody();
         return;
     }
     
@@ -56,7 +69,7 @@ class Application
             }
         }
 
-        return [];
+        return [false, false];
     }
 
     protected function prepareUri(string $uri): string

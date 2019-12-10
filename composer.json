@@ -12,7 +12,8 @@
         },
         "files": [
             "app/src/Renderer.php",
-            "app/src/Template.php"
+            "app/src/Template.php",
+            "app/src/Response.php"
         ]
     }
 }

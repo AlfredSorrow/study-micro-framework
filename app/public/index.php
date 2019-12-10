@@ -3,15 +3,17 @@ require_once dirname(__DIR__, 2)  . '/vendor/autoload.php';
 
 use App\Application;
 use function App\Renderer\render;
+use function App\response;
 
 $app = new Application();
 
 $app->get('/', function () {
-    return 'Main pagdew';
+    return response(render('index'));
 });
 
+
 $app->get('/about/:name/hello/:hello', function ($attributes) {
-    return render('about', $attributes);
+    return response(render('about', $attributes));
 });
 
 $app->get('/private', function () {
