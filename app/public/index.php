@@ -11,14 +11,8 @@ $app->get('/', function () {
     return response(render('index'));
 });
 
-
-$app->get('/about/:name/hello/:hello', function ($attributes) {
-    return response(render('about', $attributes));
+$app->get('/hello/:name', function ($meta, $parameters, $attributes) {
+    return response(render('hello', $attributes));
 });
-
-$app->get('/private', function () {
-    return 'Private page';
-});
-
 
 $app->run();

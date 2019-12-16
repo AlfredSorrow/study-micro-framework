@@ -18,6 +18,16 @@ class Application
         $this->append('POST', $route, $handler);
     }
 
+    public function delete($route, $handler)
+    {
+        $this->append('DELETE', $route, $handler);
+    }
+
+    public function patch($route, $handler)
+    {
+        $this->append('PATCH', $route, $handler);
+    }
+
     protected function append($method, $route, $handler)
     {
         $updatedRoute = $route;
@@ -34,7 +44,11 @@ class Application
     public function run()
     {
         $uri = $this->prepareUri($_SERVER['REQUEST_URI']);
-        $method = $_SERVER['REQUEST_METHOD'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $method = strtoupper($_POST['_method']);
+        } else {
+            $method = $_SERVER['REQUEST_METHOD'];
+        }
         [$handler, $attributes] = $this->getRouteData($method, $uri);
         $meta = [
             'method' => $method,
@@ -61,7 +75,7 @@ class Application
         foreach ($this->handlers[$method] as $route => $handler) {
             $preparedRoute = str_replace('/', '\/', $route);
             $matches = [];
-            if (preg_match("/^$preparedRoute$/i", $uri, $matches)) {
+            if (preg_match("/^{$preparedRoute}[\/]?$/i", $uri, $matches)) {
                 $attributes = array_filter($matches, function ($key) {
                     return !is_numeric($key);
                 }, ARRAY_FILTER_USE_KEY);
@@ -74,6 +88,6 @@ class Application
 
     protected function prepareUri(string $uri): string
     {
-        return strtolower(parse_url($uri, PHP_URL_PATH));
+        return parse_url($uri, PHP_URL_PATH);
     }
 }
