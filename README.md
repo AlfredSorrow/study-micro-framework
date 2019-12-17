@@ -8,6 +8,6 @@ git clone https://github.com/AlfredSorrow/study-micro-framework.git
 
 app/resources/view
 
-### Маршрутизация / Routing
+#### Маршрутизация / Routing
 
 app/public/index.php
